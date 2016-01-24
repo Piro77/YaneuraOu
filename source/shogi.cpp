@@ -27,8 +27,8 @@ std::string PieceToCharBW(" PLNSBRGK        plnsbrgk");
 // operator<<(std::ostream& os,...)とpretty() 
 // ----------------------------------------
 
-std::string pretty(File f) { return pretty_jp ? std::string("１２３４５６７８９").substr((int32_t)f * 2, 2) : std::to_string((int32_t)f + 1); }
-std::string pretty(Rank r) { return pretty_jp ? std::string("一二三四五六七八九").substr((int32_t)r * 2, 2) : std::to_string((int32_t)r + 1); }
+std::string pretty(File f) { return pretty_jp ? std::string("１２３４５６７８９").substr((int32_t)f * KANJILEN, KANJILEN) : std::to_string((int32_t)f + 1); }
+std::string pretty(Rank r) { return pretty_jp ? std::string("一二三四五六七八九").substr((int32_t)r * KANJILEN, KANJILEN) : std::to_string((int32_t)r + 1); }
 
 std::string pretty(Move m)
 {

@@ -2029,6 +2029,9 @@ void MainThread::think()
   for (Thread* th : Threads)
     th->completedDepth = 0;
 
+  // root nodeにおける自分の手番
+  auto us = rootPos.side_to_move();
+
   if (rootMoves.size() == 0)
   {
     // 詰みなのでbestmoveを返す前に読み筋として詰みのスコアを出力すべき。
@@ -2127,8 +2130,6 @@ void MainThread::think()
   //    通常の思考処理
   // ---------------------
 
-  // root nodeにおける自分の手番
-  auto us = rootPos.side_to_move();
 
   {
     StateInfo si;

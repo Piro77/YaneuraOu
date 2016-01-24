@@ -79,8 +79,8 @@ struct Stats {
     ASSERT_LV4(is_ok(to));
 
     // abs(v) <= 324に制限する。
-    v = max((Value)-324, v);
-    v = min((Value)+324, v);
+    v = std::max((Value)-324, v);
+    v = std::min((Value)+324, v);
 
     // if (abs(int(v) >= 324) return ; のほうが良いのでは..
 

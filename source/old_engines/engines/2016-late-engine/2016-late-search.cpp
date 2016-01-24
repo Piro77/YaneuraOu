@@ -99,7 +99,11 @@ void USI::extra_option(USI::OptionsMap & o)
 	std::vector<std::string> book_list = { "no_book" , "standard_book.db"
 		, "yaneura_book1.db" , "yaneura_book2.db" , "yaneura_book3.db", "yaneura_book4.db"
 		, "user_book1.db", "user_book2.db", "user_book3.db" };
+#if defined(_MSC_VER) || __cplusplus==201402L
 	o["BookFile"] << Option(book_list, book_list[1], [](auto& o) { book_name = string(o); });
+#else
+  o["BookFile"] << Option(book_list, book_list[1], +[](const USI::Option& o) { book_name = string(o); });
+#endif
 	book_name = book_list[1];
 
 	//  BookEvalDiff: 定跡の指し手で1番目の候補の指し手と、2番目以降の候補の指し手との評価値の差が、

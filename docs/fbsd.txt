@@ -1,0 +1,56 @@
+clang++(3.4)でコンパイルできるようになってた
+(nano-plus,miniはclang3.[89]だと最適化をかけると
+ コンパイラが落ちる)
+ubuntu14.04(g++4.8)もコンパイルはできた
+   mingwもいけそう
+#/usr/bin/x86_64-w64-mingw32-g++  --version
+x86_64-w64-mingw32-g++ (GCC) 4.8.2
+#cmake -DCMAKE_TOOLCHAIN_FILE=docs/mingwtoolchain.cmake -DCMAKE_BUILD_TYPE=Release
+
+classic-tceがまたAbortで落ちる謎が発生
+
+evaluate_kppt_learn.cpp:214:21: error: array is too large
+      (81 elements)
+              WeightKpp(*kpp_w_)[SQ_NB][fe_end][fe_end];
+	                                 ^~~~~
+
+
+/home/piro/src/YaneuraOu/source/engine/nano-plus-engine/../../move_picker.h:57:9: error: use of
+      undeclared identifier 'max'; did you mean 'std::max'?
+    v = max((Value)-324, v);
+        ^~~
+        std::max
+/usr/include/c++/v1/algorithm:2608:1: note: 'std::max' declared here
+max(const _Tp& __a, const _Tp& __b)
+^
+In file included from /home/piro/src/YaneuraOu/source/engine/nano-plus-engine/nano_plus_search.cpp:24:
+In file included from /home/piro/src/YaneuraOu/source/engine/nano-plus-engine/../../thread.h:12:
+/home/piro/src/YaneuraOu/source/engine/nano-plus-engine/../../move_picker.h:58:9: error: use of
+      undeclared identifier 'min'; did you mean 'std::min'?
+    v = min((Value)+324, v);
+        ^~~
+        std::min
+
+stdをつける
+
+
+
+/home/piro/src/YaneuraOu/source/eval/evaluate_kpp.cpp:127:7: error: cannot jump from this goto
+      statement to its label
+      goto CALC_DIFF_END;
+      ^
+/home/piro/src/YaneuraOu/source/eval/evaluate_kpp.cpp:134:10: note: jump bypasses variable
+      initialization
+    auto prev = st->previous;
+
+例によってGOTOで文句言われるので移動する
+
+/home/piro/src/YaneuraOu/source/usi.cpp:57:42: error: 'auto' not allowed in lambda parameter
+    o["Threads"] << Option(4, 1, 128, [](auto& o) { Threads.read_usi_options(); });
+                                         ^~~~
+/home/piro/src/YaneuraOu/source/usi.cpp:57:21: error: no matching constructor for initialization of
+'USI::Option'
+    o["Threads"] << Option(4, 1, 128, [](auto& o) { Threads.read_usi_options(); });
+                    ^      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*autoが書けないみたい。あと+[]にすればいいらしいがよくわからん。

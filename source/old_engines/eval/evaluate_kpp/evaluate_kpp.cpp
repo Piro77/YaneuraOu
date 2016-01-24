@@ -94,7 +94,6 @@ namespace Eval
       delete[] kkp2;
       delete[] kpp2;
     }
-
     return;
 
   Error:;
@@ -195,6 +194,8 @@ namespace Eval
   {
     // 過去に遡って差分を計算していく。
     auto st = pos.state();
+    auto now = st;
+    auto prev = st->previous;
 
     // すでに計算されている。rootか？
     int sumKKP, sumBKPP, sumWKPP;

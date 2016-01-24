@@ -1431,6 +1431,8 @@ void MainThread::think()
   // 探索しないときにThreads.main()の指し手が選ばれない。
   for (Thread* th : Threads)
     th->completedDepth = 0;
+  // root nodeにおける自分の手番
+  auto us = rootPos.side_to_move();
 
   if (rootMoves.size() == 0)
   {
@@ -1448,6 +1450,7 @@ void MainThread::think()
   // ---------------------
   //     定跡の選択部
   // ---------------------
+
 
   {
     auto it = book.find(rootPos);
@@ -1499,8 +1502,6 @@ void MainThread::think()
   //    通常の思考処理
   // ---------------------
 
-  // root nodeにおける自分の手番
-  auto us = rootPos.side_to_move();
 
   {
     StateInfo si;

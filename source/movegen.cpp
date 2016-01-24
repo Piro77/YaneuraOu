@@ -495,7 +495,6 @@ template <Color Us> struct GenerateDropMoves {
 	}
 };
 
-
 // 手番側が王手がかかっているときに、王手を回避する手を生成する。
 template<Color Us, bool All>
 ExtMove* generate_evasions(const Position& pos, ExtMove* mlist)

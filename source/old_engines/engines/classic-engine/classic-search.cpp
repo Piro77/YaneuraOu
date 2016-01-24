@@ -1698,6 +1698,8 @@ void MainThread::think()
   // ---------------------
   // 合法手がないならここで投了
   // ---------------------
+  // root nodeにおける自分の手番
+  auto us = rootPos.side_to_move();
 
   // lazy SMPではcompletedDepthを最後に比較するのでこれをゼロ初期化しておかないと
   // 探索しないときにThreads.main()の指し手が選ばれない。
@@ -1788,8 +1790,6 @@ void MainThread::think()
   //    通常の思考処理
   // ---------------------
 
-  // root nodeにおける自分の手番
-  auto us = rootPos.side_to_move();
 
   {
     StateInfo si;

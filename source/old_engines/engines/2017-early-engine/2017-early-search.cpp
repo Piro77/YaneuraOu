@@ -86,7 +86,6 @@ void USI::extra_option(USI::OptionsMap & o)
 
 	o["PvInterval"] << Option(300, 0, 100000);
 
-
 	// 投了スコア
 	o["ResignValue"] << Option(99999, 0, 99999);
 

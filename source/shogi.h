@@ -668,7 +668,7 @@ constexpr bool operator<(const ExtMove& first, const ExtMove& second) {
 	return first.value < second.value;
 }
 
-inline std::ostream& operator<<(std::ostream& os, ExtMove m) { os << m.move << '(' << m.value << ')'; return os; }
+inline std::ostream& operator<<(std::ostream& os, ExtMove m) { os << m.move << '(' << (unsigned int)m.value << ')'; return os; }
 
 // --------------------
 //       手駒

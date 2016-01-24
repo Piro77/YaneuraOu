@@ -3,7 +3,141 @@
 
 #include "../../extra/all.h"
 
+#if defined(_MSC_VER)
 #include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/select.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
+typedef void            VOID;
+typedef int             INT;
+typedef unsigned int    UINT;
+typedef unsigned short  WORD;
+typedef unsigned long   DWORD;
+typedef unsigned long   ULONG;
+typedef unsigned char   BYTE;
+typedef long            LONG;
+typedef short           SHORT;
+typedef unsigned short  USHORT;
+typedef char            CHAR;
+typedef unsigned char   UCHAR;
+
+typedef UINT            HANDLE;
+typedef HANDLE *PHANDLE;
+
+typedef BYTE           *LPBYTE;
+typedef CHAR           *LPSTR;
+typedef const CHAR     *LPCSTR;
+
+typedef unsigned short  WCHAR;
+typedef WCHAR          *LPWSTR;
+typedef LPWSTR PTSTR, LPTSTR;
+typedef VOID *LPVOID;
+
+typedef int BOOL;
+
+#define TRUE true
+#define FALSE false
+
+typedef struct _PROCESS_INFORMATION {
+  HANDLE hProcess;
+  HANDLE hThread;
+  DWORD  dwProcessId;
+  DWORD  dwThreadId;
+} PROCESS_INFORMATION, *LPPROCESS_INFORMATION;
+
+typedef struct _STARTUPINFO {
+  DWORD  cb;
+  LPTSTR lpReserved;
+  LPTSTR lpDesktop;
+  LPTSTR lpTitle;
+  DWORD  dwX;
+  DWORD  dwY;
+  DWORD  dwXSize;
+  DWORD  dwYSize;
+  DWORD  dwXCountChars;
+  DWORD  dwYCountChars;
+  DWORD  dwFillAttribute;
+  DWORD  dwFlags;
+  WORD   wShowWindow;
+  WORD   cbReserved2;
+  LPBYTE lpReserved2;
+  HANDLE hStdInput;
+  HANDLE hStdOutput;
+  HANDLE hStdError;
+} STARTUPINFO, *LPSTARTUPINFO;
+
+
+typedef struct _SECURITY_ATTRIBUTES {
+  DWORD  nLength;
+  LPVOID lpSecurityDescriptor;
+  BOOL   bInheritHandle;
+} SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES, *LPSECURITY_ATTRIBUTES;
+
+#define ZeroMemory(Destination, Length) memset((Destination),0,(Length))
+
+#define   STARTF_USESTDHANDLES    0x00000100
+#define   HANDLE_FLAG_INHERIT     0x00000001
+
+#define   WAIT_OBJECT_0     0x0
+
+static DWORD WaitForSingleObject(HANDLE h,DWORD m)
+{
+  int sts;
+  if (kill(h,0) == 0) {
+    //生きてるっぽいので待つ
+    usleep(1000);
+  }
+  if (!waitpid(h,&sts,WNOHANG)) {
+    return 1;
+  }
+  return WAIT_OBJECT_0;
+}
+static BOOL CloseHandle(HANDLE h)
+{
+  return true;
+}
+static BOOL TerminateProcess(HANDLE h,UINT uExitCode)
+{
+  kill(h,SIGKILL);
+  return true;
+}
+static BOOL ReadFile(HANDLE h,LPVOID v,DWORD size,DWORD *wr,DWORD *p)
+{
+  int r;
+  r=::read(h, v, size);
+  if(wr)*wr=r;
+  if(!r)return false;
+  return true;
+
+}
+static BOOL WriteFile(HANDLE h,LPCSTR v,DWORD size,DWORD *wr,DWORD *p)
+{
+  int r;
+  r=::write(h, v, size);
+  if(wr)*wr=r;
+  if(!r)return false;
+  return true;
+}
+static BOOL CreatePipe(PHANDLE hr,PHANDLE hw,LPSECURITY_ATTRIBUTES at,DWORD sz)
+{
+  int pipefd[2];
+  if (::pipe(pipefd)<0) {
+    return false;
+  }
+  *hr = pipefd[0];
+  *hw = pipefd[1];
+  return true;
+}
+static BOOL SetHandleInformation(HANDLE h,DWORD mask,DWORD flags)
+{
+  return true;
+}
+//XXXminってどこに定義されてんだろ
+static int min(int a , int b) { return (a < b ? a: b);}
+#endif
 
 // 子プロセスとの通信ログをデバッグのために表示するオプション
 //#define OUTPUT_PROCESS_LOG
@@ -38,7 +172,11 @@ struct ProcessNegotiator
 				::TerminateProcess(pi.hProcess, 0);
 			}
 			::CloseHandle(pi.hProcess);
+#if defined(_MSC_VER)
 			pi.hProcess = nullptr;
+#else
+			pi.hProcess = 0;
+#endif
 		}
 	}
 
@@ -50,6 +188,7 @@ struct ProcessNegotiator
 	// 子プロセスの実行
 	void run(string app_path_)
 	{
+#if defined(_MSC_VER)
 		int numa = (int)Options["EngineNuma"];
 		if (numa != -1)
 		{
@@ -73,6 +212,7 @@ struct ProcessNegotiator
 		}
 
 		wstring app_path = to_wstring(app_path_);
+#endif
 
 		ZeroMemory(&pi, sizeof(pi));
 		ZeroMemory(&si, sizeof(si));
@@ -83,7 +223,7 @@ struct ProcessNegotiator
 		si.dwFlags |= STARTF_USESTDHANDLES;
 
 		// Create the child process
-
+#if defined(_MSC_VER)
 		success = ::CreateProcess(
 			NULL, // ApplicationName
 			(LPWSTR)app_path.c_str(),  // CmdLine
@@ -99,6 +239,32 @@ struct ProcessNegotiator
 			&si,  // STARTUPINFO pointer
 			&pi   // receives PROCESS_INFOMATION
 		);
+#else
+		success = false;
+		pid_t pid=fork();
+		if (pid == 0) {
+			//child
+			::close(child_std_in_write);
+			::close(child_std_out_read);
+			::dup2(child_std_in_read,STDIN_FILENO);
+			::dup2(child_std_out_write,STDOUT_FILENO);
+			::close(child_std_in_read);
+			::close(child_std_out_write);
+
+			if (::execlp(app_path_.c_str(),app_path_.c_str(),NULL,NULL)<0) {
+				exit(-1);
+			}
+		}
+		else {
+			if (pid > 0) {
+				// parent
+				::close(child_std_in_read);
+				::close(child_std_out_write);
+				pi.hProcess = pid;
+				success = true;
+			}
+		}
+#endif
 
 		if (!success)
 		{
@@ -109,7 +275,11 @@ struct ProcessNegotiator
 		if (pi.hThread)
 		{
 			::CloseHandle(pi.hThread);
+#if defined(_MSC_VER)
 			pi.hThread = nullptr;
+#else
+			pi.hThread = 0;
+#endif
 		}
 	}
 	bool success;
@@ -124,6 +294,7 @@ struct ProcessNegotiator
 			return result;
 
 
+#if defined(_MSC_VER)
 		DWORD dwExitCode;
 		::GetExitCodeProcess(pi.hProcess, &dwExitCode);
 		if (dwExitCode != STILL_ACTIVE)
@@ -132,6 +303,9 @@ struct ProcessNegotiator
 			terminated = true;
 			return read_next();
 		}
+#else
+		//死んだらFPEあたりが飛びそうだがどうする？
+#endif
 
 		// ReadFileは同期的に使いたいが、しかしデータがないときにブロックされるのは困るので
 		// pipeにデータがあるのかどうかを調べてからReadFile()する。
@@ -140,7 +314,7 @@ struct ProcessNegotiator
 		CHAR chBuf[BUF_SIZE];
 
 		// bufferサイズは1文字少なく申告して終端に'\0'を付与してstring化する。
-
+#if defined(_MC_VER)
 		BOOL success = ::PeekNamedPipe(
 			child_std_out_read, // [in]  handle of named pipe
 			chBuf,              // [out] buffer     
@@ -149,6 +323,20 @@ struct ProcessNegotiator
 			&dwReadTotal,       // [out] total bytes avail
 			&dwLeft             // [out] bytes left this message
 		);
+#else
+		BOOL success = false;
+		fd_set readfds;
+		struct timeval tv;
+
+		FD_ZERO(&readfds);
+		FD_SET(child_std_out_read, &readfds);
+		tv.tv_sec  = 0;
+		tv.tv_usec = 0;
+		if (::select( 1, &readfds, NULL, NULL, &tv )>=0) {
+			success = true;
+			dwReadTotal = 1;
+		}
+#endif
 
 		if (success && dwReadTotal > 0)
 		{
@@ -236,7 +424,7 @@ protected:
 
 		return result;
 	}
-
+#if defined(_MSC_VER)
 	// wstring変換
 	wstring to_wstring(const string& src)
 	{
@@ -247,6 +435,7 @@ protected:
 		delete[] wcs;
 		return result;
 	}
+#endif
 
 	PROCESS_INFORMATION pi;
 	STARTUPINFO si;

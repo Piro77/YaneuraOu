@@ -1,4 +1,4 @@
-﻿#ifndef _BITOP_H_
+#ifndef _BITOP_H_
 #define _BITOP_H_
 
 #include "../shogi.h"
@@ -313,7 +313,7 @@ public:
 
 // 最下位bitをresetする命令。
 
-#if (defined(USE_AVX2) && defined(IS_64BIT))
+#if (defined(USE_AVX2) && defined(IS_64BIT)) && !defined(__GNUC__)
 #define BLSR(x) _blsr_u64(x)
 #else
 #define BLSR(x) (x & (x-1))

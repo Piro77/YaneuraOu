@@ -24,7 +24,7 @@
 // ターゲットCPUのところだけdefineしてください。(残りは自動的にdefineされます。)
 
 //#define USE_AVX512
-#define USE_AVX2
+//#define USE_AVX2
 //#define USE_SSE42
 //#define USE_SSE41
 //#define USE_SSE2
@@ -507,6 +507,19 @@ extern GlobalOptions_ GlobalOptions;
 #include <limits>       // numeric_limits
 
 // --------------------
+//   diable warnings
+// --------------------
+#if !defined(offsetof)
+#include <climits> //INT_MAX
+#include <cstring> //memcpy
+#include <cstddef> //offsetof
+#endif
+#if __MINGW32__
+#include <cstring> //memset
+#endif
+
+
+// --------------------
 //      configure
 // --------------------
 
@@ -814,4 +827,16 @@ inline int MKDIR(std::string dir_name)
 #define ADD_BOARD_EFFECT_REWIND(color_,sq_,e1_) { board_effect[color_].e[sq_] += (uint8_t)e1_; }
 #define ADD_BOARD_EFFECT_BOTH_REWIND(color_,sq_,e1_,e2_) { board_effect[color_].e[sq_] += (uint8_t)e1_; board_effect[~color_].e[sq_] += (uint8_t)e2_; }
 
+#if defined(_MSC_VER)
+//XXX _WIN32の場合は？(MINGW)
+#define KANJILEN 2
+#else
+//3byte?
+#define KANJILEN 3
+#endif
+#if defined(_WIN32)
+#define PATH_SEPARATOR "\\"
+#else
+#define PATH_SEPARATOR "/"
+#endif
 #endif // _CONFIG_H_

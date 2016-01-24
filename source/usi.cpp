@@ -319,7 +319,13 @@ namespace USI
 		// 並列探索するときのスレッド数
 		// CPUの搭載コア数をデフォルトとすべきかも知れないが余計なお世話のような気もするのでしていない。
 
+#if defined(_MSC_VER)
 		o["Threads"] << Option(4, 1, 512, [](const Option& o) { Threads.set(o); });
+#else
+		o["Threads"] << Option(1, 1, 512, [](const Option& o) { Threads.set(o); });
+		//標準出力の自動フラッシュ
+		cout<<std::unitbuf;
+#endif
 
 		// USIプロトコルでは、"USI_Hash"なのだが、
 		// 置換表サイズを変更しての自己対戦などをさせたいので、
