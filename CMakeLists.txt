@@ -28,7 +28,7 @@ add_definitions(-D_LINUX)
 
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-  set (CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
+  set (CMAKE_CXX_FLAGS "-std=c++14 -stdlib=libc++")
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR MINGW OR APPLE)
@@ -46,45 +46,55 @@ endif()
 ## YaneuraOu
 file(GLOB_RECURSE YANE_HEADERS  source/*.h)
 set(YANE_SRCS
-source/bitboard.cpp
-source/engine/2017-early-engine/2017-early-search.cpp
+source/eval/kppt/evaluate_kppt_learner.cpp
+source/eval/kppt/evaluate_kppt.cpp
+source/eval/evaluate.cpp
+source/eval/kppp_kkpt/evaluate_kppp_kkpt_learner.cpp
+source/eval/kppp_kkpt/evaluate_kppp_kkpt.cpp
+source/eval/evaluate_bona_piece.cpp
+source/eval/evaluate_io.cpp
+source/eval/kpppt/evaluate_kpppt.cpp
+source/eval/kpppt/evaluate_kpppt_learner.cpp
+source/eval/kpp_kkpt_fv_var/evaluate_kpp_kkpt_fv_var.cpp
+source/eval/kpp_kkpt_fv_var/evaluate_kpp_kkpt_fv_var_learner.cpp
+source/eval/kpp_kkpt/evaluate_kpp_kkpt_learner.cpp
+source/eval/kpp_kkpt/evaluate_kpp_kkpt.cpp
+source/eval/kkppt/evaluate_kkppt_learner.cpp
+source/eval/kkppt/evaluate_kkppt.cpp
+source/eval/kkpp_kkpt/evaluate_kkpp_kkpt.cpp
+source/eval/kkpp_kkpt/evaluate_kkpp_kkpt_learner.cpp
+source/eval/evaluate_mir_inv_tools.cpp
+source/misc.cpp
+source/engine/user-engine/user-search.cpp
 source/engine/help-mate-engine/help-mate-search.cpp
 source/engine/mate-engine/mate-search.cpp
 source/engine/local-game-server/local-game-server.cpp
-source/engine/user-engine/user-search.cpp
-source/eval/evaluate.cpp
-source/eval/evaluate_bona_piece.cpp
-source/eval/evaluate_io.cpp
-source/eval/evaluate_kpp.cpp
-source/eval/evaluate_kppt.cpp
-source/eval/evaluate_no_eval.cpp
-source/eval/progress.cpp
-source/extra/bitop.cpp
-source/extra/benchmark.cpp
-source/extra/book/book.cpp
-source/extra/book/apery_book.cpp
-source/extra/entering_king_win.cpp
-source/extra/long_effect.cpp
+source/engine/2018-otafuku-engine/2018-otafuku-search.cpp
+source/usi.cpp
+source/bitboard.cpp
+source/thread.cpp
+source/shogi.cpp
+source/move_picker.cpp
+source/position.cpp
+source/movegen.cpp
 source/extra/mate/mate1ply_with_effect.cpp
-source/extra/mate/mate1ply_without_effect.cpp
 source/extra/mate/mate_n_ply.cpp
-source/extra/move_picker/move_picker_2017Q2.cpp
+source/extra/mate/mate1ply_without_effect.cpp
 source/extra/see.cpp
+source/extra/sfen_packer.cpp
+source/extra/kif_converter/kif_convert_tools.cpp
+source/extra/entering_king_win.cpp
+source/extra/bitop.cpp
+source/extra/long_effect.cpp
+source/extra/benchmark.cpp
+source/extra/book/apery_book.cpp
+source/extra/book/book.cpp
 source/extra/test_cmd.cpp
 source/extra/timeman.cpp
-source/extra/sfen_packer.cpp
-source/learn/evaluate_learn_kppt.cpp
-source/learn/evaluate_learn_kpp_kkpt.cpp
-source/learn/learner.cpp
 source/learn/learning_tools.cpp
 source/learn/multi_think.cpp
-source/misc.cpp
-source/movegen.cpp
-source/shogi.cpp
-source/position.cpp
-source/thread.cpp
+source/learn/learner.cpp
 source/tt.cpp
-source/usi.cpp
 )
 set(YANE_ALL_SRCS ${YANE_HEADERS} ${YANE_SRCS})
 
@@ -95,7 +105,8 @@ if(NOT DEFINED YANEURAOU_EDITION)
   message(STATUS "cmake -DYANEURAOU_EDITION=LOCAL_GAME_SERVER")
   message(STATUS "cmake -DYANEURAOU_EDITION=HELP_MATE_ENGINE")
   message(STATUS "cmake -DYANEURAOU_EDITION=YANEURAOU_2017_EARLY_ENGINE")
-	set(YANEURAOU_EDITION YANEURAOU_2017_EARLY_ENGINE)
+	message(STATUS "cmake -DYANEURAOU_EDITION=YANEURAOU_2018_OTAFUKU_ENGINE")
+	set(YANEURAOU_EDITION YANEURAOU_2018_OTAFUKU_ENGINE)
 endif()
 
 message(STATUS "Building Engine ${YANEURAOU_EDITION}")
